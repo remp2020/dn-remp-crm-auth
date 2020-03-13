@@ -15,8 +15,9 @@ if ( !defined( 'WPINC' ) ) {
 	die;
 }
 
+register_activation_hook( __FILE__, 'remp_crm_auth_activate' );
 
-add_action( 'init', 'remp_crm_auth' );
+add_action( 'init', 'remp_crm_auth_init' );
 add_action( 'wp_enqueue_scripts', 'remp_login_form_script' );
 
 
@@ -98,7 +99,7 @@ function remp_get_user( string $data = 'info' ) {
 		return null;
 	}
 
-	return $response['body'];
+	return json_decode( $response['body'], true );
 }
 
 
@@ -120,15 +121,33 @@ function remp_get_user_token() {
 
 
 /**
- * Localisations
+ * Localisations loaded
  *
  * @since 1.0.0
  */
 
-function remp_crm_auth() {
+function remp_crm_auth_init() {
 	load_plugin_textdomain( 'dn-remp-crm-auth' );
 }
 
+
+/**
+ * Dependencies check
+ *
+ * @since 1.0.0
+ */
+
+function remp_crm_auth_activate() {
+	if ( !function_exists( 'is_plugin_active_for_network' ) ) {
+		include_once( ABSPATH . '/wp-admin/includes/plugin.php' );
+	}
+
+	if ( current_user_can( 'activate_plugins' ) && !defined( 'DN_REMP_HOST' ) ) {
+		deactivate_plugins( plugin_basename( __FILE__ ) );
+
+		die( __( 'This plugin requires DN_REMP_HOST defined in your wp-config.php .', 'dn-remp-paywall' ) );
+	}
+}
 
 /**
  * Adds javascript handling for login form. If not needed, or if you use custom implementation, feel free to remove_action.
