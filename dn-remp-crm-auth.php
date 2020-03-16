@@ -15,8 +15,9 @@ if ( !defined( 'WPINC' ) ) {
 	die;
 }
 
+register_activation_hook( __FILE__, 'remp_crm_auth_activate' );
 
-add_action( 'init', 'remp_crm_auth' );
+add_action( 'init', 'remp_crm_auth_init' );
 add_action( 'wp_enqueue_scripts', 'remp_login_form_script' );
 
 
@@ -98,7 +99,7 @@ function remp_get_user( string $data = 'info' ) {
 		return null;
 	}
 
-	return $response['body'];
+	return json_decode( $response['body'], true );
 }
 
 
@@ -120,13 +121,56 @@ function remp_get_user_token() {
 
 
 /**
- * Localisations
+ * Localisations loaded & dependencies check
  *
  * @since 1.0.0
  */
 
-function remp_crm_auth() {
+function remp_crm_auth_init() {
 	load_plugin_textdomain( 'dn-remp-crm-auth' );
+	
+	if ( current_user_can( 'activate_plugins' ) && !defined( 'DN_REMP_HOST' ) ) {
+		add_action( 'admin_init', 'remp_crm_auth_deactivate' );
+		add_action( 'admin_notices', 'remp_crm_auth_deactivate_notice' );
+		unset( $_GET[ 'activate' ] );
+	}
+}
+
+
+/**
+ * Activation hook
+ *
+ * @since 1.0.0
+ */
+
+function remp_crm_auth_activate() {
+	if ( !function_exists( 'is_plugin_active_for_network' ) ) {
+		include_once( ABSPATH . '/wp-admin/includes/plugin.php' );
+	}
+}
+
+
+/**
+ * Deactivate uppon unsuccessful dependency check
+ *
+ * @since 1.0.0
+ */
+
+function remp_crm_auth_deactivate() {
+	deactivate_plugins( plugin_basename( __FILE__ ) );	
+}
+
+
+/**
+ * Adds admin notice when deactivated uppon unsuccessful dependency check
+ *
+ * @since 1.0.0
+ */
+
+function remp_crm_auth_deactivate_notice() {
+	printf( '<div class="error"><p>%s</p></div>',
+		__( 'The plugin <strong>DN REMP CRM Auth</strong> requires <code>DN_REMP_HOST</code> constant to be defined in <code>wp-config.php</code>.', 'dn-remp-crm-auth' )
+	);
 }
 
 
@@ -140,4 +184,3 @@ function remp_login_form_script() {
 	wp_register_script( 'dn-remp-crm-auth', plugin_dir_url( __FILE__ ) . 'dn-remp-crm-auth.js', [ 'jquery' ], false, true );
 	wp_enqueue_script( 'dn-remp-crm-auth' );	
 }
-
