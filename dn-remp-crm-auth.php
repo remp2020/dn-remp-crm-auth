@@ -50,6 +50,16 @@ function remp_login_form( $echo = true ) {
 		);
 	}
 	
+	/**
+	 * Filter login form HTML
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $html Form HTML
+	 *
+	 * @return string Form HTML
+	 */
+
 	$html = apply_filters( 'remp_login_form_html', $html );
 
 	if ( $echo ) {
