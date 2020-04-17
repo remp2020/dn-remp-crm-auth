@@ -1,6 +1,5 @@
 <?php
 
-
 /**
  * Plugin Name: DN REMP CRM Auth
  * Plugin URI:  https://remp2020.com
@@ -11,15 +10,14 @@
  * License:     MIT
  */
 
-if ( !defined( 'WPINC' ) ) {
-	die;
+if (!defined('WPINC')) {
+	die();
 }
 
-register_activation_hook( __FILE__, 'remp_crm_auth_activate' );
+register_activation_hook(__FILE__, 'remp_crm_auth_activate');
 
-add_action( 'init', 'remp_crm_auth_init' );
-add_action( 'wp_enqueue_scripts', 'remp_login_form_script' );
-
+add_action('init', 'remp_crm_auth_init');
+add_action('wp_enqueue_scripts', 'remp_login_form_script');
 
 /**
  * Echo or return simple login form.
@@ -31,10 +29,10 @@ add_action( 'wp_enqueue_scripts', 'remp_login_form_script' );
  * @return string Returns the HTML for login form
  */
 
-function remp_login_form( $echo = true ) {
+function remp_login_form($echo = true) {
 	$html = '';
 
-	if ( defined( 'DN_REMP_CRM_HOST' ) ) {
+	if (defined('DN_REMP_CRM_HOST')) {
 		$html = sprintf(
 			'
 			<form class="remp_login_form" action="%s">
@@ -44,12 +42,12 @@ function remp_login_form( $echo = true ) {
 			</form>
 			',
 			DN_REMP_CRM_HOST . '/api/v1/users/login/',
-			__( 'E-mail', 'dn-remp-crm-auth' ),
-			__( 'Password', 'dn-remp-crm-auth' ),
-			__( 'Login', 'dn-remp-crm-auth' )
+			__('E-mail', 'dn-remp-crm-auth'),
+			__('Password', 'dn-remp-crm-auth'),
+			__('Login', 'dn-remp-crm-auth')
 		);
 	}
-	
+
 	/**
 	 * Filter login form HTML
 	 *
@@ -60,15 +58,14 @@ function remp_login_form( $echo = true ) {
 	 * @return string Form HTML
 	 */
 
-	$html = apply_filters( 'remp_login_form_html', $html );
+	$html = apply_filters('remp_login_form_html', $html);
 
-	if ( $echo ) {
+	if ($echo) {
 		echo $html;
 	}
 
 	return $html;
 }
-
 
 /**
  * Returns user data.
@@ -80,19 +77,19 @@ function remp_login_form( $echo = true ) {
  * @return array|false|null Returns data, false if not logged in or null if bad input or missing configuration.
  */
 
-function remp_get_user( string $data = 'info' ) {
+function remp_get_user(string $data = 'info') {
 	$apis = [
 		'info' => '/api/v1/user/info',
 		'subscriptions' => '/api/v1/users/subscriptions'
 	];
 
-	if ( !defined( 'DN_REMP_CRM_HOST' ) || !in_array( $data, array_keys( $apis ) ) ) {
+	if (!defined('DN_REMP_CRM_HOST') || !in_array($data, array_keys($apis))) {
 		return null;
 	}
 
 	$token = remp_get_user_token();
 
-	if ( $token === false ) {
+	if ($token === false) {
 		return false;
 	}
 
@@ -101,17 +98,16 @@ function remp_get_user( string $data = 'info' ) {
 		'Authorization' => 'Bearer ' . $token
 	];
 
-	$response = wp_remote_get( DN_REMP_CRM_HOST . $apis[ $data ], [ 'headers' => $headers ] );
+	$response = wp_remote_get(DN_REMP_CRM_HOST . $apis[$data], ['headers' => $headers]);
 
-	if ( is_wp_error( $response ) ) {
-		error_log( 'REMP get_user_subscriptions: ' . $response->get_error_message() );
+	if (is_wp_error($response)) {
+		error_log('REMP get_user_subscriptions: ' . $response->get_error_message());
 
 		return null;
 	}
 
-	return json_decode( $response['body'], true );
+	return json_decode($response['body'], true);
 }
-
 
 /**
  * Returns user token.
@@ -122,13 +118,12 @@ function remp_get_user( string $data = 'info' ) {
  */
 
 function remp_get_user_token() {
-	if ( isset( $_COOKIE['n_token'] ) ) {
+	if (isset($_COOKIE['n_token'])) {
 		return $_COOKIE['n_token'];
 	} else {
 		return false;
 	}
 }
-
 
 /**
  * Localisations loaded & dependencies check
@@ -137,15 +132,14 @@ function remp_get_user_token() {
  */
 
 function remp_crm_auth_init() {
-	load_plugin_textdomain( 'dn-remp-crm-auth' );
-	
-	if ( current_user_can( 'activate_plugins' ) && !defined( 'DN_REMP_CRM_HOST' ) ) {
-		add_action( 'admin_init', 'remp_crm_auth_deactivate' );
-		add_action( 'admin_notices', 'remp_crm_auth_deactivate_notice' );
-		unset( $_GET[ 'activate' ] );
+	load_plugin_textdomain('dn-remp-crm-auth');
+
+	if (current_user_can('activate_plugins') && !defined('DN_REMP_CRM_HOST')) {
+		add_action('admin_init', 'remp_crm_auth_deactivate');
+		add_action('admin_notices', 'remp_crm_auth_deactivate_notice');
+		unset($_GET['activate']);
 	}
 }
-
 
 /**
  * Activation hook
@@ -154,11 +148,10 @@ function remp_crm_auth_init() {
  */
 
 function remp_crm_auth_activate() {
-	if ( !function_exists( 'is_plugin_active_for_network' ) ) {
-		include_once( ABSPATH . '/wp-admin/includes/plugin.php' );
+	if (!function_exists('is_plugin_active_for_network')) {
+		include_once ABSPATH . '/wp-admin/includes/plugin.php';
 	}
 }
-
 
 /**
  * Deactivate uppon unsuccessful dependency check
@@ -167,9 +160,8 @@ function remp_crm_auth_activate() {
  */
 
 function remp_crm_auth_deactivate() {
-	deactivate_plugins( plugin_basename( __FILE__ ) );	
+	deactivate_plugins(plugin_basename(__FILE__));
 }
-
 
 /**
  * Adds admin notice when deactivated uppon unsuccessful dependency check
@@ -178,11 +170,14 @@ function remp_crm_auth_deactivate() {
  */
 
 function remp_crm_auth_deactivate_notice() {
-	printf( '<div class="error"><p>%s</p></div>',
-		__( 'The plugin <strong>DN REMP CRM Auth</strong> requires <code>DN_REMP_CRM_HOST</code> constant to be defined in <code>wp-config.php</code>.', 'dn-remp-crm-auth' )
+	printf(
+		'<div class="error"><p>%s</p></div>',
+		__(
+			'The plugin <strong>DN REMP CRM Auth</strong> requires <code>DN_REMP_CRM_HOST</code> constant to be defined in <code>wp-config.php</code>.',
+			'dn-remp-crm-auth'
+		)
 	);
 }
-
 
 /**
  * Adds javascript handling for login form. If not needed, or if you use custom implementation, feel free to remove_action.
@@ -191,6 +186,6 @@ function remp_crm_auth_deactivate_notice() {
  */
 
 function remp_login_form_script() {
-	wp_register_script( 'dn-remp-crm-auth', plugin_dir_url( __FILE__ ) . 'dn-remp-crm-auth.js', [ 'jquery' ], false, true );
-	wp_enqueue_script( 'dn-remp-crm-auth' );	
+	wp_register_script('dn-remp-crm-auth', plugin_dir_url(__FILE__) . 'dn-remp-crm-auth.js', ['jquery'], false, true);
+	wp_enqueue_script('dn-remp-crm-auth');
 }
