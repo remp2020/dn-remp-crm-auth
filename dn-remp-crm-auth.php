@@ -4,7 +4,7 @@
  * Plugin Name: DN REMP CRM Auth
  * Plugin URI:  https://remp2020.com
  * Description: REMP CRM login, authentification and user data retrieval functions. You need to define <code>DN_REMP_CRM_HOST</code> in your <code>wp-config.php</code> file for this plugin to work correctly and then use included functions in your theme.
- * Version:     1.0.0
+ * Version:     1.1.0
  * Author:      Michal Rusina
  * Author URI:  http://michalrusina.sk/
  * License:     MIT
@@ -83,12 +83,22 @@ function remp_get_user(string $data = 'info') {
 		'subscriptions' => '/api/v1/users/subscriptions'
 	];
 
+	/**
+	 * Filters available CRM APIs
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param array $apis Array of APIs' relative paths with leading and without trailing slash
+	 */
+	$apis = apply_filters('remp_crm_auth_apis', $apis);
+
 	if (!defined('DN_REMP_CRM_HOST')) {
 		return [
 			'body' => null,
 			'error_msg' => __('DN_REMP_CRM_HOST nie je definované', 'dn-remp-crm-auth')
 		];
 	}
+
 	if (!in_array($data, array_keys($apis))) {
 		$valid_apis = implode(',', array_keys($apis));
 		return [
