@@ -83,14 +83,30 @@ function remp_get_user(string $data = 'info') {
 		'subscriptions' => '/api/v1/users/subscriptions'
 	];
 
-	if (!defined('DN_REMP_CRM_HOST') || !in_array($data, array_keys($apis))) {
-		return null;
+	if (!defined('DN_REMP_CRM_HOST')) {
+		return [
+			'body' => null,
+			'error_msg' => __('DN_REMP_CRM_HOST nie je definované', 'dn-remp-crm-auth')
+		];
+	}
+	if (!in_array($data, array_keys($apis))) {
+		$valid_apis = implode(',', array_keys($apis));
+		return [
+			'body' => null,
+			'error_msg' => __(
+				'remp_get_user(): param $data je neplatný. Platné hodnoty sú ' . $valid_apis,
+				'dn-remp-crm-auth'
+			)
+		];
 	}
 
 	$token = remp_get_user_token();
 
 	if ($token === false) {
-		return false;
+		return [
+			'body' => null,
+			'error_msg' => null
+		];
 	}
 
 	$headers = [
@@ -100,13 +116,27 @@ function remp_get_user(string $data = 'info') {
 
 	$response = wp_remote_get(DN_REMP_CRM_HOST . $apis[$data], ['headers' => $headers]);
 
-	if (is_wp_error($response)) {
-		error_log('REMP get_user_subscriptions: ' . $response->get_error_message());
-
-		return null;
+	switch (wp_remote_retrieve_response_code($response)) {
+		case '':
+			$error_msg = is_wp_error($response)
+				? $response->get_error_message()
+				: __('Chyba komnunikácie s CRM', 'dn-remp-crm-auth');
+			$body = null;
+			break;
+		case 200:
+			$error_msg = '';
+			$body = json_decode($response['body'], true);
+			break;
+		default:
+			$error = json_decode(wp_remote_retrieve_body($response), true);
+			$error_msg = $error['message'] ?? __('CRM vrátilo chybu bez bližšieho popisu', 'dn-remp-crm-auth');
+			$body = null;
 	}
 
-	return json_decode($response['body'], true);
+	return [
+		'body' => $body,
+		'error_msg' => $error_msg
+	];
 }
 
 /**

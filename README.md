@@ -59,15 +59,17 @@ Response:
 ```php
 Array
 (
-    [status] => ok
-    [user] => Array
-        (
-            [id] => 14910
-            [email] => michalrusina@gmail.com
-            [first_name] => 
-            [last_name] => 
-        )
-
+    [body] => [
+        [status] => ok
+        [user] => Array
+            (
+                [id] => 14910
+                [email] => michalrusina@gmail.com
+                [first_name] => 
+                [last_name] => 
+            )
+    ],
+    ['error_msg'] => ''
 )
 ```
 
@@ -80,35 +82,37 @@ Response:
 ```php
 Array
 (
-    [status] => ok
-    [subscriptions] => Array
-        (
-            [0] => Array
-                (
-                    [start_at] => Array
-                        (
-                            [date] => 2018-07-18 00:00:00
-                            [timezone_type] => 3
-                            [timezone] => Europe/Bratislava
-                        )
-
-                    [end_at] => Array
-                        (
-                            [date] => 2020-09-25 00:00:00
-                            [timezone_type] => 3
-                            [timezone] => Europe/Bratislava
-                        )
-
-                    [code] => discount_10_months_web_app_klub
-                    [access] => Array
-                        (
-                            [0] => mobile
-                        )
-
-                )
-
-        )
-
+    [body] => [
+        [status] => ok
+        [subscriptions] => Array
+            (
+                [0] => Array
+                    (
+                        [start_at] => Array
+                            (
+                                [date] => 2018-07-18 00:00:00
+                                [timezone_type] => 3
+                                [timezone] => Europe/Bratislava
+                            )
+    
+                        [end_at] => Array
+                            (
+                                [date] => 2020-09-25 00:00:00
+                                [timezone_type] => 3
+                                [timezone] => Europe/Bratislava
+                            )
+    
+                        [code] => discount_10_months_web_app_klub
+                        [access] => Array
+                            (
+                                [0] => mobile
+                            )
+    
+                    )
+    
+            )
+    ],
+    ['error_msg'] => ''
 )
 ```
 
